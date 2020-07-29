@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Course Catalog</title>
+<!-- CSS only -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+<!-- JS, Popper.js, and jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script src="scripts/all_categories.js"></script>
+<script src="scripts/all_courses.js"></script>
+<!--<script src="coursecatalog_functions.js"></script>-->
+</head>
+<body style="background-color: lightgray ;">
+<div class="container-fluid">
+<div class="row">
+	<div class="col-3">
+		<h3>Search for keywords</h3>
+		<input type="text" name="filter" id="filter" oninput="filterSearch()" placeholder="Filter Search"/>
+		<hr>
+		<h3>Category</h3>
+		<div id="categories">
+			<input type="radio" value="All" name="categories" checked="true" onchange="filterSearch()" /> All
+			<br>
+		</div>
+	</div>
+
+	<div class="col-9">
+		<h4 id="courselength"> Count:</h4>
+		<div class="row" id="courses">
+			
+		</div>
+	</div>
+	
+</div>
+</div>
+
+</body>
+</html>
+<script>
+	getCategories();
+let coursesdata=[];
+let courses=[];
+const monthNames = ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+function getCategories(){	
+	xmlhttp = new XMLHttpRequest();
+	  url1 = "scripts/all_categories.js";
+	  //url1 = "https://frontend-hiring.appspot.com/all_categories?secret=HelloMars";
+	xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          var myArr = JSON.parse(this.responseText);
+          var categories=JSON.parse(myArr.payload);
+           console.log("categories",categories)
+		   for (let index = 0; index < categories.length; index++) {
+			   const element = categories[index];
+			   let radio = document.createElement("INPUT");
+			   radio.setAttribute("type", "radio");
+			   radio.setAttribute("name","categories");
+			   radio.setAttribute("id",element);
+			   radio.value=element;
+			   radio.onchange=function()
+			   {
+				   filterSearch();
+			   }
+			   
+			   document.getElementById("categories").append(radio);
+			   document.getElementById("categories").append("  "+element);
+			   let br=document.createElement("br")
+			   document.getElementById("categories").append(br);
+		   }
+		   getCourses();
+        }
+      };
+	xmlhttp.open("GET",url1, true);
+    xmlhttp.send();
+}
+function getCourses(){
+	url2 = "scripts/all_courses.js";
+	  xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          var myArr = JSON.parse(this.responseText);
+          courses=JSON.parse(myArr.payload);
+		  coursesdata=JSON.parse(myArr.payload);
+		   console.log("courses",courses);
+		   printCourses(courses,1);
+		  
+        }
+      };
+    xmlhttp.open("GET",url2, true);
+    xmlhttp.send();
+}
+
+function filterSearch()
+{
+	let filter=document.getElementById('filter').value;
+	let category = getRadioValue();
+	let result=[];let temp=[];
+      if(category!="All")
+      {
+		console.log("NOT ALL");
+
+        for (let index = 0; index < coursesdata.length; index++) {
+          const element = coursesdata[index];
+          if(element.category==category)
+          {
+             temp.push(element);
+          }
+        }
+      }
+      else
+      {
+		  temp=coursesdata;
+		  console.log("category:",category,"temp ",temp);
+      }
+     
+      if(filter!==undefined || filter!=="")
+      {
+		console.log("filter:",filter)
+		
+        for (let index = 0; index < temp.length; index++) {
+		  let element = temp[index];
+		  
+		  filter=filter.toString().toLowerCase();
+        
+		 if(element.duration.toLowerCase().includes(filter))
+         {
+			 console.log("duration")
+            result.push(element);
+		 }
+		 else if(element.weeks.toString().toLowerCase().includes(filter))
+         {
+			console.log("weeks")
+            result.push(element);
+		 }
+         else if(element.title.toLowerCase().includes(filter))
+         {
+			console.log("title",index);
+            result.push(element);
+         }
+         else if(element.instructor_name.toLowerCase().includes(filter))
+         {
+			console.log("instructor");
+            result.push(element);
+         }
+		 else if(document.getElementById("desc"+index)!=null && document.getElementById("desc"+index).textContent.toLowerCase().includes(filter))
+				{	
+							console.log("desc");
+							result.push(element);
+				}
+		 else if(element.text.toLowerCase().includes(filter))
+         {
+			console.log("text");
+            result.push(element);
+		 }
+		 
+		 
+         }
+        // console.log("result with filter",result);
+      }
+      else
+      {
+         result=temp;
+      }
+      courses=result;
+	  printCourses(courses,0);
+	  console.log("filtered courses",courses);
+}
+
+function getRadioValue() { 
+            var ele = document.getElementsByName('categories'); 
+              
+            for(i = 0; i < ele.length; i++) { 
+                if(ele[i].checked) 
+					{
+						return ele[i].value;
+					}
+            } 
+		} 
+		
+function printCourses(courses,flag)
+{
+	console.log("flag",flag);
+	document.getElementById("courselength").innerHTML=courses.length+" courses open for registration";
+	const myNode = document.getElementById("courses");
+  	myNode.innerHTML = '';
+	for (let index = 0; index < courses.length; index++) {
+			   const element = courses[index];
+
+			   let div_card = document.createElement("DIV");
+			   div_card.setAttribute("id","card"+index);
+			   div_card.className="card col-6";
+			   document.getElementById("courses").appendChild(div_card);
+
+			   let title = document.createElement("H3");
+			   //title.className="card";
+               title.innerHTML=element.title;
+			   title.setAttribute("id","title"+index);
+			   document.getElementById("card"+index).appendChild(title);
+			   
+
+			   let instructor = document.createElement("H3");
+			   //instructor.className="card";
+			   instructor.innerHTML=element.instructor_name;
+			   document.getElementById("card"+index).appendChild(instructor);
+
+			   let desc = document.createElement("DIV");
+			   desc.className="card-text";
+			   desc.setAttribute("id","desc"+index);
+			   desc.innerHTML=element.description;
+			   document.getElementById("card"+index).appendChild(desc);
+			  
+
+
+	  
+			   let text_el = document.createElement("H4");
+			   // text_el.className="card-text";
+			   let text=getStatusText(element.start_date,element.end_date);
+			   text_el.innerHTML=text;
+			   if(flag===1)
+			   		coursesdata[index].text=text;
+			   document.getElementById("card"+index).appendChild(text_el);
+			   
+			   let dates = document.createElement("P");
+			   dates.style.fontWeight="bold";
+			   // start_date.className="card-text";
+			   let duration=getDuration(element.start_date,element.end_date);
+			   dates.innerHTML=duration;
+			   if(flag===1)
+			   		coursesdata[index].duration=duration; 
+			   document.getElementById("card"+index).appendChild(dates);
+
+	
+			   let time = document.createElement("P");
+			   time.style.fontWeight="bold";
+			   // time.className="card-text";
+			   let weeks=getWeeks(element.start_date,element.end_date);
+			   time.innerHTML=weeks+"week course , "+element.estimated_workload;
+			   if(flag===1)
+			   		coursesdata[index].weeks=weeks+"week course , "+element.estimated_workload;
+			   document.getElementById("card"+index).appendChild(time);
+
+		   }
+
+		   
+}
+
+function getDuration(start_date,end_date)
+{
+	let d_s = new Date(start_date);
+    let start_month= monthNames[d_s.getMonth()];
+    let start_year= d_s.getFullYear();
+
+    let d_e = new Date(end_date);
+    let end_month= monthNames[d_e.getMonth()];
+	let end_year= d_e.getFullYear();
+
+	let duration = start_month+" , "+start_year +" - "+end_month+" , "+end_year;
+	return duration;
+}
+
+function getStatusText(start_date,end_date)
+{
+	  let sd=new Date(start_date);
+      let ed=new Date(end_date);
+      let td=new Date();
+      let text;
+      if(td<sd)
+      {
+        text="Pre registration";
+      }
+      else if(sd<=td && td<=ed)
+      {
+          text="Ongoing"
+      }
+      else
+      {
+          text="Completed"
+	  }
+	  
+	  return text;
+}
+
+function getWeeks(start_date,end_date)
+{
+	d_s = new Date(start_date);
+    d_e = new Date(end_date);
+    let Difference_In_Time = d_e.getTime() - d_s.getTime(); 
+    let weeks = ( (Difference_In_Time) / (1000 * 60 * 60 * 24 * 7));
+	
+
+	return weeks+" ";
+}
+</script>
