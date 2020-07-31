@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Course Catalog</title>
+<!-- CSS only -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+<!-- JS, Popper.js, and jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script src="scripts/all_categories.js"></script>
+<script src="scripts/all_courses.js"></script>
+<script src="cc_functions.js"></script>
+<!--<script src="coursecatalog_functions.js"></script>-->
+</head>
+<body style="background-color: lightgray ;">
+<div class="container-fluid">
+<div class="row">
+	<div class="col-3">
+		<h3>Search for keywords</h3>
+		<input type="text" name="filter" id="filter" oninput="filterSearch()" placeholder="Filter Search"/>
+		<hr>
+		<h3>Category</h3>
+		<div id="categories">
+			<input type="radio" value="All" name="categories" checked="true" onchange="filterSearch()" /> All
+			<br>
+		</div>
+	</div>
+
+	<div class="col-9">
+		<h4 id="courselength"> Count:</h4>
+		<div class="row" id="courses">
+			
+		</div>
+	</div>
+	
+</div>
+</div>
+
+</body>
+</html>
+<script>
+	getCategories();
+let coursesdata=[];
+let courses=[];
+const monthNames = ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+function getCategories(){	
+	xmlhttp = new XMLHttpRequest();
+	  url1 = "scripts/all_categories.js";
+	//   url = "https://frontend-hiring.appspot.com/all_categories?secret=HelloMars";
+	//   fetch(
+	// 		url1,
+	// 		{ method: 'GET',mode: 'no-cors' }
+	// 	)
+	// 	.then( response => response.json() )
+	// 	.then( json => console.log("json from fetch",json) )
+	// 	.catch( error => console.error('error:', error) );
+
+	xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          var myArr = JSON.parse(this.responseText);
+          var categories=JSON.parse(myArr.payload);
+           console.log("categories",categories)
+		   for (let index = 0; index < categories.length; index++) {
+			   const element = categories[index];
+			   let radio = document.createElement("INPUT");
+			   radio.setAttribute("type", "radio");
+			   radio.setAttribute("name","categories");
+			   radio.setAttribute("id",element);
+			   radio.value=element;
+			   radio.onchange=function()
+			   {
+				   filterSearch();
+			   }
+			   
+			   document.getElementById("categories").append(radio);
+			   document.getElementById("categories").append("  "+element);
+			   let br=document.createElement("br")
+			   document.getElementById("categories").append(br);
+		   }
+		   getCourses();
+        }
+      };
+	xmlhttp.open("GET",url1,true);
+	xmlhttp.withCredentials = true;
+	xmlhttp.send();
+	
+}
+function getCourses(){
+	url2 = "scripts/all_courses.js";
+	  xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          var myArr = JSON.parse(this.responseText);
+          courses=JSON.parse(myArr.payload);
+		  coursesdata=JSON.parse(myArr.payload);
+		   console.log("courses",courses);
+		   printCourses(courses,1);
+		  
+        }
+      };
+    xmlhttp.open("GET",url2, true);
+    xmlhttp.send();
+}
+
+
+</script>
